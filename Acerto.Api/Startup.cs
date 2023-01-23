@@ -19,6 +19,7 @@
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             _services.AddEndpointsApiExplorer();
             _services.AddSwaggerGen();
+            _services.AddAutoMapper(GetType().Assembly);  // GetType().Assembly pega todas as classes de configuracao do projeto
         }
 
 

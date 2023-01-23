@@ -28,9 +28,15 @@ namespace Acerto.Business.Entities
             Speed = speed;
         }
 
-        public override ValidationResult Validate()
+        public override ValidationResult Validate() //  o que é válido em um pokemon
         {
-            return base.Validate();
+            var result = new ValidationResult();
+            if(Name.Length < 3 || Name.Length > 50)
+            {
+                result.Errors.Add(new ValidationFailure(nameof(Name), "O nome do pokémon deve ter entre 3 e 50 caracteres."));
+            }
+
+            return result;
         }
     }
 }

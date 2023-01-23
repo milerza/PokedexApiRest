@@ -1,6 +1,10 @@
-﻿using Acerto.Business.Services;
+﻿using Acerto.Business.Entities;
+using Acerto.Business.Services;
+using Acerto.Api.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+
 
 namespace Acerto.Api.Controllers
 {
@@ -9,35 +13,45 @@ namespace Acerto.Api.Controllers
                                                     //eu tenho que herdar da controler base para acessar os endpoint
     {
         private readonly IPokedexService _pokedexService;
+        private readonly IMapper _mapper;
+
 
         public PokedexController(IPokedexService pokedexService)
         {
             _pokedexService = pokedexService;
         }
 
-        [HttpPost] //verbos http
+        [HttpPost] /// se é Post: Insercao http:acerto/pokedex/
         [SwaggerOperation("Cadastrar Pokémon")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> AddPokemon() //todo endpoint retorna um IActionResult
+        public async Task<IActionResult> AddPokemon([FromBody]PokemonModel model) //todo endpoint retorna um IActionResult
+                                                                               //[FromBody] é para pegar do corpo da requisicao. O default é da url.
         {
-            return Ok(); //status code de sucesso
+            var pokemon = _mapper.Map<Pokemon>(model);
+            var pokemonById = await _pokedexService.AddPokemonAsync(pokemon);
+
+            return Created($"{HttpContext.Request.Path}/{pokemonById}", null); //retorna que foi criado um pokemon pro front
         }
 
 
-        [HttpPut]
+        [HttpPut] // se é Put: Update http:acerto/pokedex/
         [SwaggerOperation("Atualizar cadastro Pokémon")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<IActionResult> UpdatePokemon()
+        public async Task<IActionResult> UpdatePokemon([FromBody] PokemonModel model)
         {
-            return Ok(); //status code de sucesso
+            var pokemon = _mapper.Map<Pokemon>(model);
+            await _pokedexService.UpdatePokemonAsync(pokemon);
+
+            return NoContent(); 
         }
 
-        [HttpDelete]
+        [HttpDelete("{pokemonId:guid}")] //http:acerto/pokedex/ahdjsh-asdf-asdf-fsdfsd estou passando o guid na rota
         [SwaggerOperation("Remover Pokémon")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> DeletePokemon()
+        [ProducesResponseType(StatusCodes.Status204NoContent)] 
+        public async Task<IActionResult> DeletePokemon(Guid pokemonId)
         {
-            return Ok(); //status code de sucesso
+            await _pokedexService.DeletePokemonAsync(pokemonId);
+            return NoContent();
         }
         
         [HttpGet("{pokemonId:guid}")]
@@ -45,7 +59,7 @@ namespace Acerto.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPokemon(Guid pokemonId)
         {
-            return Ok(); //status code de sucesso
+            return Ok();
         }
 
         [HttpGet("find")]
